@@ -31,7 +31,10 @@ class MyApp extends LitElement {
       _page: { type: String },
       _drawerOpened: { type: Boolean },
       _snackbarOpened: { type: Boolean },
-      _offline: { type: Boolean }
+      _offline: { type: Boolean },
+      _routes: { type: Array },
+      _selectedRoute: { type: Object },
+      _persistDrawer: { type: Boolean }
     };
   }
 
@@ -41,10 +44,10 @@ class MyApp extends LitElement {
         :host {
           display: block;
 
-          --app-drawer-width: 256px;
+          --app-drawer-width: 300px;
 
-          --app-primary-color: #E91E63;
-          --app-secondary-color: #293237;
+          --app-primary-color: #FFCC00;
+          --app-secondary-color: #332266;
           --app-dark-text-color: var(--app-secondary-color);
           --app-light-text-color: white;
           --app-section-even-color: #f7f7f7;
@@ -124,10 +127,15 @@ class MyApp extends LitElement {
           color: var(--app-drawer-text-color);
           line-height: 40px;
           padding: 0 24px;
+          font-size: 14pt;
         }
 
         .drawer-list > a[selected] {
           color: var(--app-drawer-selected-color);
+        }
+
+        .drawer-list > h2 {
+          color: var(--app-drawer-text-color);
         }
 
         /* Workaround for IE11 displaying <main> as inline */
@@ -167,36 +175,28 @@ class MyApp extends LitElement {
           <button class="menu-btn" title="Menu" @click="${this._menuButtonClicked}">${menuIcon}</button>
           <div main-title>${this.appTitle}</div>
         </app-toolbar>
-
-        <!-- This gets hidden on a small screen-->
-        <nav class="toolbar-list">
-          <a ?selected="${this._page === 'view1'}" href="/view1">View One</a>
-          <a ?selected="${this._page === 'view2'}" href="/view2">View Two</a>
-          <a ?selected="${this._page === 'view3'}" href="/view3">View Three</a>
-        </nav>
       </app-header>
 
       <!-- Drawer content -->
       <app-drawer
           .opened="${this._drawerOpened}"
+          .persistent="${this._persistDrawer}"
           @opened-changed="${this._drawerOpenedChanged}">
-        <nav class="drawer-list">
-          <a ?selected="${this._page === 'view1'}" href="/view1">View One</a>
-          <a ?selected="${this._page === 'view2'}" href="/view2">View Two</a>
-          <a ?selected="${this._page === 'view3'}" href="/view3">View Three</a>
+          <nav class="drawer-list">
+            <h2>Routes Available</h2>
+            ${this._routes.map(r =>
+            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">${r.route_ds}</a>`
+          )}
         </nav>
       </app-drawer>
 
       <!-- Main content -->
       <main role="main" class="main-content">
-        <my-view1 class="page" ?active="${this._page === 'view1'}"></my-view1>
-        <my-view2 class="page" ?active="${this._page === 'view2'}"></my-view2>
-        <my-view3 class="page" ?active="${this._page === 'view3'}"></my-view3>
-        <my-view404 class="page" ?active="${this._page === 'view404'}"></my-view404>
+        <home-view class="page" ?active="${this._page === 'home'}"></home-view>
       </main>
 
       <footer>
-        <p>Made with &hearts; by the Polymer team.</p>
+        <p>Made with &hearts; by the Ninja Hackathon 2019 Team 7</p>
       </footer>
 
       <snack-bar ?active="${this._snackbarOpened}">
@@ -208,19 +208,28 @@ class MyApp extends LitElement {
   constructor() {
     super();
     this._drawerOpened = false;
+    this._persistDrawer = true;
+    this._routes = [];
+    this._selectedRoute = {};
     // To force all event listeners for gestures to be passive.
     // See https://www.polymer-project.org/3.0/docs/devguide/settings#setting-passive-touch-gestures
     setPassiveTouchGestures(true);
 
     Services.routes.getAll()
-      .then(res => console.log(res));
+      .then(res => {
+        this._routes = res;
+      });
   }
 
   firstUpdated() {
     installRouter((location) => this._locationChanged(location));
     installOfflineWatcher((offline) => this._offlineChanged(offline));
     installMediaQueryWatcher(`(min-width: 460px)`,
-        (matches) => this._layoutChanged(matches));
+        (matches) =>{
+          console.log(matches);
+          this._persistDrawer = matches;
+          this._drawerOpened = matches;
+        });
   }
 
   updated(changedProps) {
@@ -232,6 +241,15 @@ class MyApp extends LitElement {
         // This object also takes an image property, that points to an img src.
       });
     }
+  }
+
+  _routeClicked({ target: { id } }) {
+    this._selectedRoute = this._routes.find(r => r.route_id === id);
+    console.log(this._selectedRoute);
+  }
+
+  _isRouteSelected(route_id) {
+    return route_id === this._selectedRoute.route_id;
   }
 
   _layoutChanged(isWideLayout) {
@@ -255,7 +273,7 @@ class MyApp extends LitElement {
 
   _locationChanged(location) {
     const path = window.decodeURIComponent(location.pathname);
-    const page = path === '/' ? 'view1' : path.slice(1);
+    const page = path === '/' ? 'home' : path.slice(1);
     this._loadPage(page);
     // Any other info you might want to extract from the path (like page type),
     // you can do here.
@@ -272,11 +290,8 @@ class MyApp extends LitElement {
 
   _loadPage(page) {
     switch(page) {
-      case 'view1':
-        import('../components/my-view1.js').then((module) => {
-          // Put code in here that you want to run every time when
-          // navigating to view1 after my-view1.js is loaded.
-        });
+      case 'home':
+        import('../components/home-view.js');
         break;
       case 'view2':
         import('../components/my-view2.js');

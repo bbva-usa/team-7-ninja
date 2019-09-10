@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 /**
 @license
 Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
@@ -14,18 +15,40 @@ import { PageViewElement } from './page-view-element.js';
 // These are the shared styles needed by this element.
 import { SharedStyles } from './shared-styles.js';
 
-class MyView1 extends PageViewElement {
+class HomeView extends PageViewElement {
   static get styles() {
     return [
       SharedStyles
     ];
   }
 
+  static get properties() {
+    return {
+      appTitle: { type: String },
+      _page: { type: String },
+    };
+  }
+
+  constructor() {
+    super();
+    this._page = 'djknsflkhasd';
+  }
+
+  firstUpdated() {
+    console.log(this.shadowRoot.querySelector('#map'));
+
+    tomtom.L.map('map', {
+      key: 'xZxOt6tG6faICTemfXGdFM4axfQvDPv6',
+      source: 'vector',
+      basePath: '../../sdk',
+    });
+  }
+
   render() {
     return html`
-      MAP GOES HERE???
+      <div id="map"></div>
     `;
   }
 }
 
-window.customElements.define('my-view1', MyView1);
+window.customElements.define('home-view', HomeView);
