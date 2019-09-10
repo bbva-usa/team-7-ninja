@@ -19,7 +19,6 @@ import { updateMetadata } from 'pwa-helpers/metadata.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-header/app-header.js';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
-import '@polymer/paper-card/paper-card.js';
 import { menuIcon } from './my-icons.js';
 import './snack-bar.js';
 import { Services } from './services';
@@ -105,7 +104,7 @@ class MyApp extends LitElement {
 
         .drawer-list > [routes] {
           display: block;
-          color: var(--app-secondary-color);
+          color: var(--app-drawer-text-color);
           line-height: 40px;
           padding: 0 40px;
           font-size: 10pt;
@@ -113,6 +112,10 @@ class MyApp extends LitElement {
         }
 
         .drawer-list > [selected] {
+          color: var(--app-drawer-selected-color);
+        }
+
+        [selected] {
           color: var(--app-drawer-selected-color);
         }
 
@@ -251,9 +254,16 @@ class MyApp extends LitElement {
             ${school.school_ds}
           </a>
           ${this._isSchoolSelected(school.school_id) ? html`
-          <paper-card routes class="slide-bottom">
-            ${school.routes.map(r => html`<div ?selected="${this._isRouteSelected(r.route_id)}" routeId="${r.route_id}" schoolId="${school.school_id}" @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">${r.route_ds}</div>`)}
-          </paper-card>` : ''}
+          <div
+            routes
+            class="slide-bottom">
+            ${school.routes.map(r => html`
+              <div
+                ?selected="${this._isRouteSelected(r.route_id)}"
+                @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">
+                ${r.route_ds}
+              </div>`)}
+          </div>` : ''}
           `
         )}
       </nav>
