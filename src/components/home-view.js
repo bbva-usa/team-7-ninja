@@ -44,7 +44,6 @@ class HomeView extends PageViewElement {
       center: { lat: 33.4757032, lng: -86.94038 },
       zoom: 13,
     });
-    
   }
 
   updated(changedProperties) {
@@ -60,8 +59,9 @@ class HomeView extends PageViewElement {
 
         #map {
           height: 100vh;
-          margin-left: 300px;
+          margin-left: 340px;
         }
+        
         @media (max-width: 460px) {
           #map {
             margin-left: 0;

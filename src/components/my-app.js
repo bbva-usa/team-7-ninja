@@ -20,7 +20,7 @@ import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-header/app-header.js';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
-import '@polymer/iron-collapse/iron-collapse.js';
+import '@polymer/paper-card/paper-card.js';
 import { menuIcon } from './my-icons.js';
 import './snack-bar.js';
 import { Services } from './services';
@@ -46,7 +46,7 @@ class MyApp extends LitElement {
         :host {
           display: block;
 
-          --app-drawer-width: 300px;
+          --app-drawer-width: 340px;
 
           --app-primary-color: #FFCC00;
           --app-secondary-color: #332266;
@@ -77,6 +77,11 @@ class MyApp extends LitElement {
 
         .toolbar-top {
           background-color: var(--app-header-background-color);
+        }
+
+        .slide-bottom {
+          -webkit-animation: slide-in-fwd-center 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+	        animation: slide-in-fwd-center 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
         }
 
         [main-title] {
@@ -137,16 +142,16 @@ class MyApp extends LitElement {
           cursor: pointer;
         }
 
-        .drawer-list > iron-collapse {
+        .drawer-list > [routes] {
           display: block;
-          color: var(--app-drawer-text-color);
+          color: var(--app-secondary-color);
           line-height: 40px;
           padding: 0 40px;
           font-size: 10pt;
           cursor: pointer;
         }
 
-        .drawer-list > a[selected] {
+        .drawer-list > [selected] {
           color: var(--app-drawer-selected-color);
         }
 
@@ -177,6 +182,7 @@ class MyApp extends LitElement {
             display: block;
             height: 30vh;
             overflow: scroll;
+            background-color: var(--app-secondary-color);
           }
           #desktop-drawer {
             display: none;
@@ -264,8 +270,6 @@ class MyApp extends LitElement {
 
   _schoolClicked({ target: { id } }) {
     this._selecedSchool = this._schools.find(r => r.school_id === id);
-    this.shadowRoot.querySelector(`#collapse-${id}`).toggle();
-    this.requestUpdate();
   }
 
   _routeClicked(schoolId, routeId) {
@@ -276,8 +280,12 @@ class MyApp extends LitElement {
       });
   }
 
-  _isRouteSelected(school_id) {
+  _isSchoolSelected(school_id) {
     return school_id === this._selecedSchool.school_id;
+  }
+
+  _isRouteSelected(route_id) {
+    return route_id === this._selectedRoute.route_id;
   }
 
   _getAppDrawer() {
@@ -285,12 +293,13 @@ class MyApp extends LitElement {
       <nav class="drawer-list">
           <h2>Schools</h2>
           ${this._schools.map(school =>
-          html`<a id="${school.school_id}" @click="${this._schoolClicked}" ?selected="${this._isRouteSelected(school.school_id)}">
+          html`<a id="${school.school_id}" @click="${this._schoolClicked}" ?selected="${this._isSchoolSelected(school.school_id)}">
             ${school.school_ds}
           </a>
-          <iron-collapse id="collapse-${school.school_id}">
-            ${school.routes.map(r => html`<div routeId="${r.route_id}" schoolId="${school.school_id}" @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">${r.route_ds}</div>`)}
-          </iron-collapse>
+          ${this._isSchoolSelected(school.school_id) ? html`
+          <paper-card routes class="slide-bottom">
+            ${school.routes.map(r => html`<div ?selected="${this._isRouteSelected(r.route_id)}" routeId="${r.route_id}" schoolId="${school.school_id}" @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">${r.route_ds}</div>`)}
+          </paper-card>` : ''}
           `
         )}
       </nav>
