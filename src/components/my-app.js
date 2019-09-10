@@ -20,6 +20,7 @@ import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-header/app-header.js';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
+import '@polymer/iron-collapse/iron-collapse.js';
 import { menuIcon } from './my-icons.js';
 import './snack-bar.js';
 import { Services } from './services';
@@ -90,6 +91,10 @@ class MyApp extends LitElement {
           display: none;
         }
 
+        #mobile-drawer {
+          display: none;
+        }
+
         .toolbar-list > a {
           display: inline-block;
           color: var(--app-header-text-color);
@@ -130,6 +135,14 @@ class MyApp extends LitElement {
           font-size: 14pt;
         }
 
+        .drawer-list > iron-collapse {
+          display: block;
+          color: var(--app-primary-color);
+          line-height: 40px;
+          padding: 0 24px;
+          font-size: 12pt;
+        }
+
         .drawer-list > a[selected] {
           color: var(--app-drawer-selected-color);
         }
@@ -162,6 +175,14 @@ class MyApp extends LitElement {
           color: var(--app-drawer-text-color);
           text-align: center;
         }
+
+        @media (max-width: 460px) {
+          #mobile-drawer {
+            display: block;
+            height: 30vh;
+            overflow: scroll;
+          }
+        }
       `
     ];
   }
@@ -172,7 +193,6 @@ class MyApp extends LitElement {
       <!-- Header -->
       <app-header condenses reveals effects="waterfall">
         <app-toolbar class="toolbar-top">
-          <button class="menu-btn" title="Menu" @click="${this._menuButtonClicked}">${menuIcon}</button>
           <div main-title>${this.appTitle}</div>
         </app-toolbar>
       </app-header>
@@ -182,17 +202,7 @@ class MyApp extends LitElement {
           .opened="${this._drawerOpened}"
           .persistent="${this._persistDrawer}"
           @opened-changed="${this._drawerOpenedChanged}">
-          <nav class="drawer-list">
-            <h2>Routes Available</h2>
-            ${this._routes.map(r =>
-            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">
-              ${r.route_ds}
-            </a>
-            <div>
-
-            </div>
-            `
-          )}
+          ${this._getAppDrawer()}
         </nav>
       </app-drawer>
 
@@ -203,6 +213,9 @@ class MyApp extends LitElement {
           ?active="${this._page === 'home'}"
           .stops="${this._selectedRoute.drop_off}">
         </home-view>
+        <div id="mobile-drawer">
+          ${this._getAppDrawer()}
+        </div>
       </main>
 
       <footer>
@@ -225,7 +238,7 @@ class MyApp extends LitElement {
     // See https://www.polymer-project.org/3.0/docs/devguide/settings#setting-passive-touch-gestures
     setPassiveTouchGestures(true);
 
-    Services.routes.getAll()
+    Services.routes.getBySchooolId('test')
       .then(res => {
         this._routes = res;
       });
@@ -255,11 +268,28 @@ class MyApp extends LitElement {
 
   _routeClicked({ target: { id } }) {
     this._selectedRoute = this._routes.find(r => r.route_id === id);
-    console.log(this._selectedRoute);
+    this.shadowRoot.querySelector(`#collapse-${id}`).toggle();
   }
 
   _isRouteSelected(route_id) {
     return route_id === this._selectedRoute.route_id;
+  }
+
+  _getAppDrawer() {
+    return html`
+      <nav class="drawer-list">
+            <h2>Routes Available</h2>
+            ${this._routes.map(r =>
+            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">
+              ${r.route_ds}
+            </a>
+            <iron-collapse id="collapse-${r.route_id}">
+              <div></div>
+            </iron-collapse>
+            `
+          )}
+        </nav>
+      `;
   }
 
   _layoutChanged(isWideLayout) {

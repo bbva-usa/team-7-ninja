@@ -8,4 +8,8 @@ export class Services {
   static get routes() {
     return new Fetcher('routes');
   }
+
+  static get schools() {
+    return new Fetcher('schools');
+  }
 }

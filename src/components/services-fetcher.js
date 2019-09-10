@@ -51,6 +51,12 @@ export class Fetcher {
     return Fetcher.fetch.apply(this, params);
   }
 
+  getBySchooolId(id) {
+    const params = ['GET', `/schools/${id}/${this._entityName}`];
+
+    return Fetcher.fetch.apply(this, params);
+  }
+
   /**
    * @name post
    * @param data - request body
