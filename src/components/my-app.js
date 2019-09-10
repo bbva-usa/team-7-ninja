@@ -33,8 +33,9 @@ class MyApp extends LitElement {
       _drawerOpened: { type: Boolean },
       _snackbarOpened: { type: Boolean },
       _offline: { type: Boolean },
-      _routes: { type: Array },
+      _schools: { type: Array },
       _selectedRoute: { type: Object },
+      _selecedSchool: { type: Object },
       _persistDrawer: { type: Boolean },
     };
   }
@@ -60,7 +61,7 @@ class MyApp extends LitElement {
 
           --app-drawer-background-color: var(--app-secondary-color);
           --app-drawer-text-color: var(--app-light-text-color);
-          --app-drawer-selected-color: #78909C;
+          --app-drawer-selected-color: var(--app-primary-color);
         }
 
         app-header {
@@ -104,7 +105,7 @@ class MyApp extends LitElement {
         }
 
         .toolbar-list > a[selected] {
-          color: var(--app-header-selected-color);
+          color: var(--app-primary-color);
           border-bottom: 4px solid var(--app-header-selected-color);
         }
 
@@ -132,15 +133,17 @@ class MyApp extends LitElement {
           color: var(--app-drawer-text-color);
           line-height: 40px;
           padding: 0 24px;
-          font-size: 14pt;
+          font-size: 12pt;
+          cursor: pointer;
         }
 
         .drawer-list > iron-collapse {
           display: block;
-          color: var(--app-primary-color);
+          color: var(--app-drawer-text-color);
           line-height: 40px;
-          padding: 0 24px;
-          font-size: 12pt;
+          padding: 0 40px;
+          font-size: 10pt;
+          cursor: pointer;
         }
 
         .drawer-list > a[selected] {
@@ -169,18 +172,14 @@ class MyApp extends LitElement {
           display: block;
         }
 
-        footer {
-          padding: 24px;
-          background: var(--app-drawer-background-color);
-          color: var(--app-drawer-text-color);
-          text-align: center;
-        }
-
         @media (max-width: 460px) {
           #mobile-drawer {
             display: block;
             height: 30vh;
             overflow: scroll;
+          }
+          #desktop-drawer {
+            display: none;
           }
         }
       `
@@ -199,6 +198,7 @@ class MyApp extends LitElement {
 
       <!-- Drawer content -->
       <app-drawer
+          id="desktop-drawer"
           .opened="${this._drawerOpened}"
           .persistent="${this._persistDrawer}"
           @opened-changed="${this._drawerOpenedChanged}">
@@ -211,16 +211,12 @@ class MyApp extends LitElement {
         <home-view
           class="page"
           ?active="${this._page === 'home'}"
-          .stops="${this._selectedRoute.drop_off}">
+          .route="${this._selectedRoute}">
         </home-view>
         <div id="mobile-drawer">
           ${this._getAppDrawer()}
         </div>
       </main>
-
-      <footer>
-        <p>Made with &hearts; by the Ninja Hackathon 2019 Team 7</p>
-      </footer>
 
       <snack-bar ?active="${this._snackbarOpened}">
         You are now ${this._offline ? 'offline' : 'online'}.
@@ -232,15 +228,16 @@ class MyApp extends LitElement {
     super();
     this._drawerOpened = false;
     this._persistDrawer = true;
-    this._routes = [];
+    this._schools = [];
     this._selectedRoute = {};
+    this._selecedSchool = {};
     // To force all event listeners for gestures to be passive.
     // See https://www.polymer-project.org/3.0/docs/devguide/settings#setting-passive-touch-gestures
     setPassiveTouchGestures(true);
 
-    Services.routes.getBySchooolId('test')
+    Services.schools.getAll()
       .then(res => {
-        this._routes = res;
+        this._schools = res;
       });
   }
 
@@ -249,7 +246,6 @@ class MyApp extends LitElement {
     installOfflineWatcher((offline) => this._offlineChanged(offline));
     installMediaQueryWatcher(`(min-width: 460px)`,
         (matches) =>{
-          console.log(matches);
           this._persistDrawer = matches;
           this._drawerOpened = matches;
         });
@@ -266,29 +262,38 @@ class MyApp extends LitElement {
     }
   }
 
-  _routeClicked({ target: { id } }) {
-    this._selectedRoute = this._routes.find(r => r.route_id === id);
+  _schoolClicked({ target: { id } }) {
+    this._selecedSchool = this._schools.find(r => r.school_id === id);
     this.shadowRoot.querySelector(`#collapse-${id}`).toggle();
+    this.requestUpdate();
   }
 
-  _isRouteSelected(route_id) {
-    return route_id === this._selectedRoute.route_id;
+  _routeClicked(schoolId, routeId) {
+
+    Services.routes.getRouteBySchoolId(schoolId, routeId)
+      .then(route => {
+        this._selectedRoute = route; 
+      });
+  }
+
+  _isRouteSelected(school_id) {
+    return school_id === this._selecedSchool.school_id;
   }
 
   _getAppDrawer() {
     return html`
       <nav class="drawer-list">
-            <h2>Routes Available</h2>
-            ${this._routes.map(r =>
-            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">
-              ${r.route_ds}
-            </a>
-            <iron-collapse id="collapse-${r.route_id}">
-              <div></div>
-            </iron-collapse>
-            `
-          )}
-        </nav>
+          <h2>Schools</h2>
+          ${this._schools.map(school =>
+          html`<a id="${school.school_id}" @click="${this._schoolClicked}" ?selected="${this._isRouteSelected(school.school_id)}">
+            ${school.school_ds}
+          </a>
+          <iron-collapse id="collapse-${school.school_id}">
+            ${school.routes.map(r => html`<div routeId="${r.route_id}" schoolId="${school.school_id}" @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">${r.route_ds}</div>`)}
+          </iron-collapse>
+          `
+        )}
+      </nav>
       `;
   }
 

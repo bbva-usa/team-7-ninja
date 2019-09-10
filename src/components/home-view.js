@@ -29,13 +29,13 @@ class HomeView extends PageViewElement {
 
   static get properties() {
     return {
-      stops: { type: Array },
+      route: { type: Array },
     };
   }
 
   constructor() {
     super();
-    this.stops = [];
+    this.route = {};
   }
 
   firstUpdated() {
@@ -47,9 +47,10 @@ class HomeView extends PageViewElement {
   }
 
   updated(changedProperties) {
-    if (!changedProperties.has('stops')) return;
+    if (!changedProperties.has('route')) return;
 
-    this._calculateAndDisplayRoute();
+    this._calculateRoutes('pick_up');
+    this._calculateRoutes('drop_off');
   }
 
   render() {
@@ -71,12 +72,9 @@ class HomeView extends PageViewElement {
     `;
   }
 
-  _calculateAndDisplayRoute() {
-    const originObject = this.stops.shift();
-    const destinationObject = this.stops.pop();
-    console.log('origin', originObject);
-    console.log('destination', destinationObject);
-    console.log('in between stops', this.stops);
+  _calculateRoutes(type) {
+    const originObject = this.route[type].shift();
+    const destinationObject = this.route[type].pop();
     const origin = new google.maps.LatLng(originObject.latitude, originObject.longitude);
     const destination = new google.maps.LatLng(destinationObject.latitude, destinationObject.longitude);
 
@@ -84,7 +82,7 @@ class HomeView extends PageViewElement {
       {
         origin,
         destination,
-        waypoints: this._createWaypoints(this.stops),
+        waypoints: this._createWaypoints(this.route[type]),
         travelMode: 'DRIVING',
       },
       (response, status) => {
