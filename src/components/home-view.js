@@ -18,7 +18,8 @@ import { PageViewElement } from './page-view-element.js';
 import { SharedStyles } from './shared-styles.js';
 
 const directionsService = new google.maps.DirectionsService();
-const directionsRenderer = new google.maps.DirectionsRenderer();
+
+let map;
 
 class HomeView extends PageViewElement {
   static get styles() {
@@ -39,11 +40,11 @@ class HomeView extends PageViewElement {
   }
 
   firstUpdated() {
-    const map = new google.maps.Map(this.shadowRoot.querySelector('#map'), {
+    map = new google.maps.Map(this.shadowRoot.querySelector('#map'), {
       center: { lat: 33.4757032, lng: -86.94038 },
       zoom: 13,
     });
-    directionsRenderer.setMap(map);
+    
   }
 
   updated(changedProperties) {
@@ -73,17 +74,29 @@ class HomeView extends PageViewElement {
   }
 
   _calculateRoutes(type) {
+    if (!this.route[type]) return;
+
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+      polylineOptions: {
+        strokeColor: type === 'pick_up' ? '#332266' : '#9b8dc4',
+        strokeOpacity: 0.6,
+        strokeWeight: 5,
+      },
+    });
+
+    directionsRenderer.setMap(map);
+
     const originObject = this.route[type].shift();
     const destinationObject = this.route[type].pop();
     const origin = new google.maps.LatLng(originObject.latitude, originObject.longitude);
     const destination = new google.maps.LatLng(destinationObject.latitude, destinationObject.longitude);
-
     directionsService.route(
       {
         origin,
         destination,
         waypoints: this._createWaypoints(this.route[type]),
         travelMode: 'DRIVING',
+        optimizeWaypoints: true,
       },
       (response, status) => {
         if (status === 'OK') {
@@ -96,7 +109,7 @@ class HomeView extends PageViewElement {
   }
 
   _createWaypoints(stops) {
-    return stops.map((s) => ({ location: new google.maps.LatLng(s.latitude, originObject.longitude), stopover: true }));
+    return stops.map((s) => ({ location: new google.maps.LatLng(s.latitude, s.longitude), stopover: true }));
   }
 }
 
