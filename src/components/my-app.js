@@ -34,7 +34,7 @@ class MyApp extends LitElement {
       _offline: { type: Boolean },
       _routes: { type: Array },
       _selectedRoute: { type: Object },
-      _persistDrawer: { type: Boolean }
+      _persistDrawer: { type: Boolean },
     };
   }
 
@@ -185,14 +185,24 @@ class MyApp extends LitElement {
           <nav class="drawer-list">
             <h2>Routes Available</h2>
             ${this._routes.map(r =>
-            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">${r.route_ds}</a>`
+            html`<a id="${r.route_id}" @click="${this._routeClicked}" ?selected="${this._isRouteSelected(r.route_id)}">
+              ${r.route_ds}
+            </a>
+            <div>
+
+            </div>
+            `
           )}
         </nav>
       </app-drawer>
 
       <!-- Main content -->
       <main role="main" class="main-content">
-        <home-view class="page" ?active="${this._page === 'home'}"></home-view>
+        <home-view
+          class="page"
+          ?active="${this._page === 'home'}"
+          .stops="${this._selectedRoute.drop_off}">
+        </home-view>
       </main>
 
       <footer>
