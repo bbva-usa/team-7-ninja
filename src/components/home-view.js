@@ -181,7 +181,7 @@ class HomeView extends PageViewElement {
     // when calculating new routes.
     const myRoute = directionResult.routes[0].legs;
     for (var i = 0; i < myRoute.length; i++) {
-      const marker = markerArray[i] = markerArray[i] || new google.maps.Marker;
+      const marker = markerArray[i] || new google.maps.Marker({ label: (i + 1).toString() });
       marker.setMap(map);
       marker.setPosition(myRoute[i].start_location);
       this.attachInstructionText(stepDisplay, marker, this.createPopupText(originalRoute[type][i].name, type, originalRoute[type][i].time));
