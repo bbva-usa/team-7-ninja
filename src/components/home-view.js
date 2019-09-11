@@ -18,6 +18,7 @@ import { PageViewElement } from './page-view-element.js';
 import { SharedStyles } from './shared-styles.js';
 
 const directionsService = new google.maps.DirectionsService();
+let directionsRenderer;
 
 let map;
 
@@ -97,7 +98,12 @@ class HomeView extends PageViewElement {
   _calculateRoutes(type) {
     if (!this.route[type]) return;
 
-    const directionsRenderer = new google.maps.DirectionsRenderer({
+    if (directionsRenderer) {
+      directionsRenderer.setMap(null);
+      directionsRenderer = null;
+    }
+
+    directionsRenderer = new google.maps.DirectionsRenderer({
       polylineOptions: {
         strokeColor: type === 'pick_up' ? '#332266' : '#9b8dc4',
         strokeOpacity: 0.6,
