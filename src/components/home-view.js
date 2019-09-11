@@ -13,9 +13,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 import { html } from 'lit-element';
 import { PageViewElement } from './page-view-element.js';
+import { installMediaQueryWatcher } from 'pwa-helpers/media-query.js';
 
 // These are the shared styles needed by this element.
 import { SharedStyles } from './shared-styles.js';
+import '@polymer/paper-tabs/paper-tabs';
+import '@polymer/paper-tabs/paper-tab';
 
 const directionsService = new google.maps.DirectionsService();
 let directionsRenderer;
@@ -32,6 +35,7 @@ class HomeView extends PageViewElement {
   static get properties() {
     return {
       route: { type: Array },
+      _currentSwitch: { type: String },
     };
   }
 
@@ -66,22 +70,36 @@ class HomeView extends PageViewElement {
     } else {
       console.log('errororo');
     }
+
+    installMediaQueryWatcher(`(min-width: 460px)`,
+      (matches) => {
+        const dropOffSwitch = this.shadowRoot.querySelector('#drop-off-switch');
+        map.controls[matches ? google.maps.ControlPosition.TOP_CENTER : google.maps.ControlPosition.LEFT_TOP].push(dropOffSwitch);
+      });
   }
 
   updated(changedProperties) {
     if (!changedProperties.has('route')) return;
 
     this._calculateRoutes('pick_up');
-    this._calculateRoutes('drop_off');
   }
 
   render() {
     return html`
       <style>
-
+        :host {
+          --paper-tab-ink: var(--app-secondary-color);
+          --paper-tabs-selection-bar-color: var(--app-secondary-color);
+        }
         #map {
           height: 100vh;
           margin-left: 340px;
+        }
+
+        paper-tabs {
+          background-color: white;
+          color: black;
+          margin-top: 3%;
         }
 
         @media (max-width: 460px) {
@@ -89,14 +107,32 @@ class HomeView extends PageViewElement {
             margin-left: 0;
             height: 60vh;
           }
+
+          paper-tabs {
+            margin-left: 6%;
+          }
         }
       </style>
       <div id="map"></div>
+      <div id="drop-off-switch">
+        <paper-tabs
+          selected="0"
+          @selected-changed="${this._optionChanged}">
+          <paper-tab>Pick Up</paper-tab>
+          <paper-tab>Drop Off</paper-tab>
+        </paper-tabs>
+      </div>
     `;
+  }
+
+  _optionChanged() {
+    this._calculateRoutes(this._currentSwitch === 'pick_up' ? 'drop_off' : 'pick_up');
   }
 
   _calculateRoutes(type) {
     if (!this.route[type]) return;
+
+    this._currentSwitch = type;
 
     if (directionsRenderer) {
       directionsRenderer.setMap(null);
@@ -109,10 +145,13 @@ class HomeView extends PageViewElement {
         strokeOpacity: 0.6,
         strokeWeight: 5,
       },
+      suppressMarkers: true,
     });
 
     directionsRenderer.setMap(map);
-
+    const markerArray = [];
+    const stepDisplay = new google.maps.InfoWindow;
+    const originalRoute = JSON.parse(JSON.stringify(this.route));
     const originObject = this.route[type].shift();
     const destinationObject = this.route[type].pop();
     const origin = new google.maps.LatLng(originObject.latitude, originObject.longitude);
@@ -127,12 +166,41 @@ class HomeView extends PageViewElement {
       },
       (response, status) => {
         if (status === 'OK') {
+          this.showTime(response, markerArray, stepDisplay, originalRoute, type);
           directionsRenderer.setDirections(response);
         } else {
-          window.alert(`irections request failed due to ${status}`);
+          window.alert(`Directions request failed due to ${status}`);
         }
       },
     );
+  }
+
+  showTime(directionResult, markerArray, stepDisplay, originalRoute, type) {
+    // For each step, place a marker, and add the text to the marker's infowindow.
+    // Also attach the marker to an array so we can keep track of it and remove it
+    // when calculating new routes.
+    const myRoute = directionResult.routes[0].legs;
+    for (var i = 0; i < myRoute.length; i++) {
+      const marker = markerArray[i] = markerArray[i] || new google.maps.Marker;
+      marker.setMap(map);
+      marker.setPosition(myRoute[i].start_location);
+      this.attachInstructionText(stepDisplay, marker, this.createPopupText(originalRoute[type][i].name, type, originalRoute[type][i].time));
+    }
+  }
+
+  createPopupText(name, type, time) {
+    return `${name}<br>
+    ${type === 'pick_up' ? 'Pick Up' : 'Drop Off'}: ${time}
+    `;
+  }
+
+  attachInstructionText(stepDisplay, marker, text) {
+    google.maps.event.addListener(marker, 'click', () => {
+      // Open an info window when the marker is clicked on, containing the text
+      // of the step.
+      stepDisplay.setContent(text);
+      stepDisplay.open(map, marker);
+    });
   }
 
   _createWaypoints(stops) {
