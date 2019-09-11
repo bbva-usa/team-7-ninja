@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-underscore-dangle */
 /**
 @license
 Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
@@ -19,9 +21,12 @@ import { updateMetadata } from 'pwa-helpers/metadata.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-header/app-header.js';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall.js';
+import '@polymer/paper-card/paper-card';
 import { menuIcon } from './my-icons.js';
 import './snack-bar.js';
 import { Services } from './services';
+import '../components/home-view.js';
+
 
 class MyApp extends LitElement {
   static get properties() {
@@ -56,11 +61,11 @@ class MyApp extends LitElement {
 
           --app-header-background-color: white;
           --app-header-text-color: var(--app-dark-text-color);
-          --app-header-selected-color: var(--app-primary-color);
+          --app-header-selected-color: var(--app-secondary-color);
 
           --app-drawer-background-color: var(--app-secondary-color);
           --app-drawer-text-color: var(--app-light-text-color);
-          --app-drawer-selected-color: var(--app-primary-color);
+          --app-drawer-selected-color: var(--app-secondary-color);
         }
 
         app-header {
@@ -75,8 +80,8 @@ class MyApp extends LitElement {
         }
 
         .slide-bottom {
-          -webkit-animation: slide-in-fwd-center 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-	        animation: slide-in-fwd-center 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+          padding-top: 3%;
+          padding-left: 2%;
         }
 
         #mobile-drawer {
@@ -88,8 +93,14 @@ class MyApp extends LitElement {
           width: 100%;
           height: 100%;
           padding: 24px;
-          background: var(--app-drawer-background-color);
+          background: #fff;
           position: relative;
+        }
+
+        paper-card {
+          padding: 5%;
+          margin: 3%;
+          border-radius: 5px;
         }
 
         .drawer-list > a {
@@ -119,6 +130,10 @@ class MyApp extends LitElement {
           color: var(--app-drawer-selected-color);
         }
 
+        [card-selected] {
+          border: 0.5px solid var(--app-secondary-color);
+        }
+
         .drawer-list > h2 {
           color: var(--app-drawer-text-color);
         }
@@ -140,12 +155,16 @@ class MyApp extends LitElement {
           display: block;
         }
 
+        #title {
+          color: black !important;
+        }
+
         @media (max-width: 460px) {
           #mobile-drawer {
             display: block;
             height: 30vh;
             overflow: scroll;
-            background-color: var(--app-secondary-color);
+            background-color: #fff;
           }
           #desktop-drawer {
             display: none;
@@ -208,18 +227,18 @@ class MyApp extends LitElement {
     installRouter((location) => this._locationChanged(location));
     installOfflineWatcher((offline) => this._offlineChanged(offline));
     installMediaQueryWatcher(`(min-width: 460px)`,
-        (matches) =>{
-          this._persistDrawer = matches;
-          this._drawerOpened = matches;
-        });
+      (matches) => {
+        this._persistDrawer = matches;
+        this._drawerOpened = matches;
+      });
   }
 
   updated(changedProps) {
     if (changedProps.has('_page')) {
-      const pageTitle = this.appTitle + ' - ' + this._page;
+      const pageTitle = this.appTitle;
       updateMetadata({
         title: pageTitle,
-        description: pageTitle
+        description: pageTitle,
         // This object also takes an image property, that points to an img src.
       });
     }
@@ -232,8 +251,8 @@ class MyApp extends LitElement {
   _routeClicked(schoolId, routeId) {
 
     Services.routes.getRouteBySchoolId(schoolId, routeId)
-      .then(route => {
-        this._selectedRoute = route; 
+      .then((route) => {
+        this._selectedRoute = route;
       });
   }
 
@@ -248,29 +267,30 @@ class MyApp extends LitElement {
   _getAppDrawer() {
     return html`
       <nav class="drawer-list">
-          <h2>${this.appTitle}</h2>
-          ${this._schools.map(school =>
-          html`<a id="${school.school_id}" @click="${this._schoolClicked}" ?selected="${this._isSchoolSelected(school.school_id)}">
-            ${school.school_ds}
-          </a>
-          ${this._isSchoolSelected(school.school_id) ? html`
-          <div
-            routes
-            class="slide-bottom">
-            ${school.routes.map(r => html`
-              <div
-                ?selected="${this._isRouteSelected(r.route_id)}"
-                @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">
-                ${r.route_ds}
-              </div>`)}
-          </div>` : ''}
-          `
-        )}
+          <h2 id="title">${this.appTitle}</h2>
+          ${this._schools.map((school) => html`
+          <paper-card ?card-selected="${this._isSchoolSelected(school.school_id)}">
+            <a id="${school.school_id}" @click="${this._schoolClicked}" ?selected="${this._isSchoolSelected(school.school_id)}">
+              ${school.school_ds}
+            </a>
+            ${this._isSchoolSelected(school.school_id) ? html`
+            <div
+              routes
+              class="slide-bottom">
+              ${school.routes.map(r => html`
+                <div
+                  class=""
+                  ?selected="${this._isRouteSelected(r.route_id)}"
+                  @click="${this._routeClicked.bind(this, school.school_id, r.route_id)}">
+                  ${r.route_ds}
+                </div>`)}
+            </div>` : ''}
+          </paper-card>`)}
       </nav>
       `;
   }
 
-  _layoutChanged(isWideLayout) {
+  _layoutChanged() {
     // The drawer doesn't make sense in a wide layout, so if it's opened, close it.
     this._updateDrawerState(false);
   }
@@ -292,10 +312,9 @@ class MyApp extends LitElement {
   _locationChanged(location) {
     const path = window.decodeURIComponent(location.pathname);
     const page = path === '/' ? 'home' : path.slice(1);
-    this._loadPage(page);
     // Any other info you might want to extract from the path (like page type),
     // you can do here.
-
+    this._page = page;
     // Close the drawer - in case the *path* change came from a link in the drawer.
     this._updateDrawerState(false);
   }
@@ -304,25 +323,6 @@ class MyApp extends LitElement {
     if (opened !== this._drawerOpened) {
       this._drawerOpened = opened;
     }
-  }
-
-  _loadPage(page) {
-    switch(page) {
-      case 'home':
-        import('../components/home-view.js');
-        break;
-      case 'view2':
-        import('../components/my-view2.js');
-        break;
-      case 'view3':
-        import('../components/my-view3.js');
-        break;
-      default:
-        page = 'view404';
-        import('../components/my-view404.js');
-    }
-
-    this._page = page;
   }
 
   _menuButtonClicked() {

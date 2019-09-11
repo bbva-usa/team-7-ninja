@@ -44,6 +44,27 @@ class HomeView extends PageViewElement {
       center: { lat: 33.4757032, lng: -86.94038 },
       zoom: 13,
     });
+    const infoWindow = new google.maps.InfoWindow();
+
+    // Try HTML5 geolocation.
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+  
+        infoWindow.setPosition(pos);
+        infoWindow.setContent('Location found.');
+        infoWindow.open(map);
+        console.log(pos);
+        map.setCenter(pos);
+      }, () => {
+        console.error('Error Getting Lcation');
+      });
+    } else {
+      console.log('errororo');
+    }
   }
 
   updated(changedProperties) {
@@ -61,7 +82,7 @@ class HomeView extends PageViewElement {
           height: 100vh;
           margin-left: 340px;
         }
-        
+
         @media (max-width: 460px) {
           #map {
             margin-left: 0;
