@@ -101,6 +101,7 @@ class MyApp extends LitElement {
           padding: 5%;
           margin: 3%;
           border-radius: 5px;
+          cursor: pointer;
         }
 
         .drawer-list > a {

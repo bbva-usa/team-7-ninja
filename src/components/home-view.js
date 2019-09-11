@@ -24,6 +24,7 @@ const directionsService = new google.maps.DirectionsService();
 let directionsRenderer;
 
 let map;
+const markerTracker = [];
 
 class HomeView extends PageViewElement {
   static get styles() {
@@ -134,6 +135,8 @@ class HomeView extends PageViewElement {
 
     this._currentSwitch = type;
 
+    markerTracker.forEach((m) => m.setMap(null));
+
     if (directionsRenderer) {
       directionsRenderer.setMap(null);
       directionsRenderer = null;
@@ -152,15 +155,16 @@ class HomeView extends PageViewElement {
     const markerArray = [];
     const stepDisplay = new google.maps.InfoWindow;
     const originalRoute = JSON.parse(JSON.stringify(this.route));
-    const originObject = this.route[type].shift();
-    const destinationObject = this.route[type].pop();
+    const originalWaypoints = JSON.parse(JSON.stringify(this.route[type]));
+    const originObject = originalWaypoints.shift();
+    const destinationObject = originalWaypoints.pop();
     const origin = new google.maps.LatLng(originObject.latitude, originObject.longitude);
     const destination = new google.maps.LatLng(destinationObject.latitude, destinationObject.longitude);
     directionsService.route(
       {
         origin,
         destination,
-        waypoints: this._createWaypoints(this.route[type]),
+        waypoints: this._createWaypoints(originalWaypoints),
         travelMode: 'DRIVING',
         optimizeWaypoints: true,
       },
@@ -185,6 +189,7 @@ class HomeView extends PageViewElement {
       marker.setMap(map);
       marker.setPosition(myRoute[i].start_location);
       this.attachInstructionText(stepDisplay, marker, this.createPopupText(originalRoute[type][i].name, type, originalRoute[type][i].time));
+      markerTracker.push(marker);
     }
   }
 
