@@ -86,7 +86,7 @@ class HomeView extends PageViewElement {
         @media (max-width: 460px) {
           #map {
             margin-left: 0;
-            height: 70vh;
+            height: 60vh;
           }
         }
       </style>

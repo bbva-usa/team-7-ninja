@@ -162,7 +162,7 @@ class MyApp extends LitElement {
         @media (max-width: 460px) {
           #mobile-drawer {
             display: block;
-            height: 30vh;
+            height: 40vh;
             overflow: scroll;
             background-color: #fff;
           }
