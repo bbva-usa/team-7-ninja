@@ -61,7 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@username">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="my-app">
+    <meta property="og:site_name" content="br-app">
     <meta property="og:image" content="images/manifest/icon-144x144.png" />
 
     <!-- Performance tip: hint to the browser to start the handshake for the fonts site -->
@@ -82,6 +82,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBo2BUxvReKWK2I-2Xs1ZvRB_kgkto8eSo"
     async defer></script>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
 
     <!-- Add any global styles for body, document, etc. -->
     <style>
@@ -108,13 +113,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   </head>
   <body>
-    <my-app appTitle="Fairfield Bus Routes"></my-app>
+    <br-app appTitle="Fairfield Bus Routes"></br-app>
     <noscript>
       Please enable JavaScript to view this website.
     </noscript>
     <!-- Load webcomponents-loader.js to check and load any polyfills your browser needs -->
     <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <!-- Built with love using PWA Starter Kit -->
-    <script type="module" src="src/components/my-app.js"></script>
+    <script type="module" src="src/components/br-app.js"></script>
   </body>
 </html>

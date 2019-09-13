@@ -23,8 +23,8 @@ export class Fetcher {
     };
 
     return fetch(`${baseUrl}${uri}`, requestInit)
-      .then(res => res.json())
-      .then(data => data.data || data);
+      .then((res) => res.json())
+      .then((data) => data.data || data);
   }
 
   /** ---- CONSTRUCTOR ---- */
