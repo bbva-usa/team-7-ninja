@@ -16,5 +16,10 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    'import/prefer-default-export': 0,
+    'class-methods-use-this': 0, 
+    'no-underscore-dangle': 0,
+    'no-alert': 0,
+    'no-console': 0,
   },
 };

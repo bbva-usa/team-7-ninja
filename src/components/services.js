@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { Fetcher } from './services-fetcher';
 
 export class Services {

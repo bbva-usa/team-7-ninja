@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable no-underscore-dangle */
 import { LitElement, html, css } from 'lit-element';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query';
@@ -116,7 +114,7 @@ class BrApp extends LitElement {
             position: absolute;
             height: 80vh;
             top: 20vh;
-            overflow: hidden;
+            overflow: scroll;
           }
 
           #desktop-drawer {

@@ -1,7 +1,3 @@
-/* eslint-disable no-alert */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable class-methods-use-this */
-
 import { html, LitElement } from 'lit-element';
 import { installMediaQueryWatcher } from 'pwa-helpers/media-query';
 

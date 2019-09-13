@@ -1,7 +1,4 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable camelcase */
-/* eslint-disable no-underscore-dangle */
-import { html, LitElement } from 'lit-element';
+import { html, LitElement, css } from 'lit-element';
 import { Services } from './services';
 
 class BrDrawer extends LitElement {
@@ -13,17 +10,9 @@ class BrDrawer extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-
-    this._selecedSchool = {};
-    this._selectedRoute = {};
-    this.schools = [];
-  }
-
-  render() {
-    return html`
-      <style>
+  static get styles() {
+    return [
+      css`
         .drawer-list > [selected] {
           color: var(--app-drawer-selected-color);
         }
@@ -104,8 +93,20 @@ class BrDrawer extends LitElement {
             font-size: 14pt;
           }
         }
-      </style>
+      `,
+    ];
+  }
 
+  constructor() {
+    super();
+
+    this._selecedSchool = {};
+    this._selectedRoute = {};
+    this.schools = [];
+  }
+
+  render() {
+    return html`
       <nav class="drawer-list">
         <h2 id="title">Fairfield Bus Routes</h2>
         ${this.schools.map(this._getSchoolCard.bind(this))}

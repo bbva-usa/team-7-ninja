@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable import/prefer-default-export */
 const baseUrl = 'https://ayu0xjjhp8.execute-api.us-east-1.amazonaws.com/team7/';
 
 export class Fetcher {
